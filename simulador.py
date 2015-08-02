@@ -40,7 +40,7 @@ def rodar_simulador():
     variaveis_de_estados = VariaveisDeEstados()
 
     # iniciar fila de eventos
-    variaveis_de_estados.eventos.append(gerar_eventos(variaveis_de_estados))
+    variaveis_de_estados.eventos.append(gerar_evento(variaveis_de_estados))
 
     # tratar eventos
     cont = 1
