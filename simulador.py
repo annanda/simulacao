@@ -93,6 +93,9 @@ def gerar_amostra_chegada_academia(taxa, fluxo):
 
 
 def trata_evento(evento, variaveis_de_estados):
+    """
+    Registra o evento passado como parâmetro no log.txt e chama a função que vai tratá-lo
+    """
     log = open('log.txt', 'w')
     variaveis_de_estados.tempo += evento[1]
     if evento[0] == 1:
@@ -140,5 +143,3 @@ def trata_evento(evento, variaveis_de_estados):
             )
         )
         trata_reentrada_esteira()
-
-
