@@ -45,24 +45,39 @@ def rodar_simulador():
     # tratar eventos
     cont = 1
     while eventos and cont <= 100:
-        trata_evento(variaveis_de_estados.eventos.popleft())
+        trata_evento(variaveis_de_estados.eventos.popleft(), variaveis_de_estados)
         cont += 1
     print "tempo: {0}".format(variaveis_de_estados.tempo)
 
 def gerar_evento(variaveis_de_estados):
-    amostra_chegada_academia = gerar_amostra_chegada_academia(taxa_chegada)
+    """
+    Gera um evento aleatório
+    """
+    amostra_chegada_academia = gerar_amostra_chegada_academia(taxa_chegada, "poisson")
     amostra_saida_esteira = gerar_amostra_saida_esteira(taxa_saida_esteira)
     amostra_entrada_bike = gerar_amostra_entrada_bike(taxa_entrada_bike)
     amostra_saida_bike = gerar_amostra_saida_bike(taxa_saida_bike)
     amostra_reentrada_esteira = gerar_amostra_reentrada_esteira(taxa_reentrada_esteira)
 
+    proximo_evento = [1, amostra_chegada_academia]
     if variaveis_de_estados.quantidade_bike + variaveis_de_estados.quantidade_esteira == 0:
         return [1, amostra_chegada_academia]
+    elif variaveis_de_estados.quantidade_esteira == 0:
+        for tempo_amostras in [[4, amostra_saida_bike], [5, amostra_reentrada_esteira]]:
+            if tempo_amostras[1] < proximo_evento[1]:
+                proximo_evento = tempo_amostras
+    elif variaveis_de_estados.quantidade_bike == 0:
+        for tempo_amostras in [[2, amostra_saida_esteira], [3, amostra_entrada_bike]]:
+            if tempo_amostras[1] < proximo_evento[1]:
+                proximo_evento = tempo_amostras
     else:
+        for tempo_amostras in [[2, amostra_saida_esteira], [3, amostra_entrada_bike], [4, amostra_saida_bike], [5, amostra_reentrada_esteira]]:
+            if tempo_amostras[1] < proximo_evento[1]:
+                proximo_evento = tempo_amostras
 
+    return proximo_evento
 
-
-def gerar_amostra_chegada(taxa, fluxo):
+def gerar_amostra_chegada_academia(taxa, fluxo):
     """
     Gera amostra de chegada de diferentes tipos de fluxo: poisson, deterministico ou uniforme
     Retorna o tempo amostrado para o fluxo dado, com a taxa dada.
@@ -77,6 +92,53 @@ def gerar_amostra_chegada(taxa, fluxo):
         return int((u * 100) + 50)
 
 
-def trata_evento(evento):
+def trata_evento(evento, variaveis_de_estados):
     log = open('log.txt', 'w')
-    tempo += evento[1]
+    variaveis_de_estados.tempo += evento[1]
+    if evento[0] == 1:
+        f.write("{0}, {1}, quantidade na esteira: {2}, quantidade na bike: {3} \n".format(
+            "chegada na academia",
+            evento[1],
+            variaveis_de_estados.quantidade_esteira,
+            variaveis_de_estados.quantidade_bike
+            )
+        )
+        trata_chegada_academia()
+    elif evento[0] == 2:
+        f.write("{0}, {1}, quantidade na esteira: {2}, quantidade na bike: {3} \n".format(
+            "saida pela esteira",
+            evento[1],
+            variaveis_de_estados.quantidade_esteira,
+            variaveis_de_estados.quantidade_bike
+            )
+        )
+        trata_saida_esteira()
+    elif evento[0] == 3:
+        f.write("{0}, {1}, quantidade na esteira: {2}, quantidade na bike: {3} \n".format(
+            "entrada na bike",
+            evento[1],
+            variaveis_de_estados.quantidade_esteira,
+            variaveis_de_estados.quantidade_bike
+            )
+        )
+        trata_entrada_bike()
+    elif evento[0] == 4:
+        f.write("{0}, {1}, quantidade na esteira: {2}, quantidade na bike: {3} \n".format(
+            "saida da bike",
+            evento[1],
+            variaveis_de_estados.quantidade_esteira,
+            variaveis_de_estados.quantidade_bike
+            )
+        )
+        trata_saida_bike()
+    else:
+        f.write("{0}, {1}, quantidade na esteira: {2}, quantidade na bike: {3} \n".format(
+            "reentrada na esteira",
+            evento[1],
+            variaveis_de_estados.quantidade_esteira,
+            variaveis_de_estados.quantidade_bike
+            )
+        )
+        trata_reentrada_esteira()
+
+
